@@ -1,0 +1,10 @@
+{
+  "renderer": {
+    "version": "v0.1.0",
+    "url": "https://github.com/Oj-washingtone/viabl-releases/releases/download/v0.1.0/renderer-standalone.tar.gz"
+  },
+  "contentServer": {
+    "version": "v0.1.0",
+    "url": "https://github.com/Oj-washingtone/viabl-releases/releases/download/v0.1.0/content-server.tar.gz"
+  }
+}
