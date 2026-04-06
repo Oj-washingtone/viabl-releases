@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          repository: Oj-washingtone/viabl-content-server
+          repository: Oj-washingtone/viabl-server
           token: ${{ secrets.RELEASES_PAT }}
 
       - uses: actions/setup-node@v4
@@ -40,7 +40,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          repository: Oj-washingtone/viabl-renderer
+          repository: Oj-washingtone/viabl
           token: ${{ secrets.RELEASES_PAT }}
 
       - uses: actions/setup-node@v4
