@@ -1,0 +1,95 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build-content-server:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: Oj-washingtone/viabl-content-server
+          token: ${{ secrets.RELEASES_PAT }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - run: npm ci
+      - run: npm run build
+      - run: npm ci --omit=dev
+
+      - name: Package
+        run: |
+          tar -czf content-server.tar.gz \
+            dist/ \
+            node_modules/ \
+            package.json
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: content-server
+          path: content-server.tar.gz
+
+  build-renderer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: Oj-washingtone/viabl-renderer
+          token: ${{ secrets.RELEASES_PAT }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - run: npm ci
+
+      - name: Build renderer
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SITE_URL: http://localhost:3000
+          NODE_ENV: production
+
+      - name: Copy static assets
+        run: |
+          cp -r .next/static .next/standalone/.next/static
+          cp -r public .next/standalone/public
+          cp -rL .next/node_modules .next/standalone/.next/node_modules
+
+      - name: Package
+        run: tar -czf renderer-standalone.tar.gz -C .next/standalone .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: renderer
+          path: renderer-standalone.tar.gz
+
+  release:
+    needs: [build-content-server, build-renderer]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: content-server
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: renderer
+
+      - name: Create release with both assets
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_PAT }}
+        run: |
+          gh release create ${{ github.ref_name }} \
+            content-server.tar.gz \
+            renderer-standalone.tar.gz \
+            --repo Oj-washingtone/viabl-releases \
+            --title "Release ${{ github.ref_name }}" \
+            --notes "Release ${{ github.ref_name }}" \
+            --latest
