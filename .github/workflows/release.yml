@@ -110,7 +110,7 @@ jobs:
           gh release create ${{ github.ref_name }} \
             content-server.tar.gz \
             renderer-standalone.tar.gz \
-            renderer-sources.tar.gz \    # ← still missing
+            renderer-sources.tar.gz \
             --repo Oj-washingtone/viabl-releases \
             --title "Release ${{ github.ref_name }}" \
             --notes "Release ${{ github.ref_name }}" \
