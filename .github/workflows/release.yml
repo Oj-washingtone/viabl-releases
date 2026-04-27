@@ -69,8 +69,26 @@ jobs:
           name: renderer
           path: renderer-standalone.tar.gz
 
+      - name: Package sources
+        run: |
+          tar -czf renderer-sources.tar.gz \
+            --exclude='.next' \
+            --exclude='node_modules' \
+            src/ \
+            public/ \
+            package.json \
+            next.config.ts \
+            tsconfig.json \
+            postcss.config.js \
+            tailwind.config.ts
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: renderer-sources
+          path: renderer-sources.tar.gz
+
   release:
-    needs: [build-content-server, build-renderer]
+    needs: [ build-content-server, build-renderer ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
@@ -81,13 +99,18 @@ jobs:
         with:
           name: renderer
 
-      - name: Create release with both assets
+      - uses: actions/download-artifact@v4
+        with:
+          name: renderer-sources
+
+      - name: Create release with all assets
         env:
           GH_TOKEN: ${{ secrets.RELEASES_PAT }}
         run: |
           gh release create ${{ github.ref_name }} \
             content-server.tar.gz \
             renderer-standalone.tar.gz \
+            renderer-sources.tar.gz \    # ← still missing
             --repo Oj-washingtone/viabl-releases \
             --title "Release ${{ github.ref_name }}" \
             --notes "Release ${{ github.ref_name }}" \
